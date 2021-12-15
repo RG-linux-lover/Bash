@@ -36,7 +36,7 @@ if [[ $osis == 'RHEL-Distro' ]] && [[ $useroption -eq 1 ]]; then
    read -p 'Enter new username - ' newusername
    egrep "^$newusername" /etc/passwd >/dev/null
    if [ $? -eq 0 ]; then
-		echo "$newusername exists!"
+		echo "$newusername already exists!"
 		exit 1
    else
    useradd $newusername 
@@ -49,7 +49,7 @@ if [[ $osis == 'RHEL-Distro' ]] && [[ $useroption -eq 1 ]]; then
    case $want in
    y) usermod -aG wheel $newusername;
       id $newusername
-      echo "$newusername" is added to sudo group;
+      echo "$newusername" is added to wheel group;
       echo -e '\n';
    ;;
    esac   
@@ -67,13 +67,62 @@ elif [[ $osis == 'RHEL-Distro' ]] && [[  $useroption -eq 3 ]]; then
    fi
      
 elif [[ $osis == 'RHEL-Distro' ]] && [[ $useroption -eq 2 ]]; then 
-   read -p 'Enter Username to delete - ' deleteuser
+   read -p 'Enter User name to delete - ' deleteuser
    userdel -fr $deleteuser
   # echo "$deleteuser is successfully deleted!!"
-   id $deleteuser
+  # id $deleteuser
+#   egrep "^$deleteuser" /etc/passwd >/dev/null
+   if [ $? -eq 0 ]; then
+                echo "user $deleteuser is deleted"
+                exit 1
+   else
+    echo "$deleteuser does not exists!"
+   fi
    
 ##################################################  Ubuntu  #######################################################
+elif [[ $osis == 'Ubuntu' ]] && [[ $useroption -eq 1 ]]; then
+   read -p 'Enter new username - ' newusername
+   egrep "^$newusername" /etc/passwd >/dev/null
+   if [ $? -eq 0 ]; then
+                echo "$newusername already exists!"
+                exit 1
+   else
+   sudo adduser $newusername
+#   read -s -p 'Enter password - ' newuserpassword
+#   echo "$newusername:$newuserpassword" | chpasswd
+   echo -e '\n' 
+   echo "$newusername User Created Successfully!!" 
+   echo -e '\n' 
+   read -p 'To give this user admin privileges press y|n ' want
+   case $want in
+   y|Y) sudo usermod -aG sudo $newusername;
+      id $newusername
+      echo "$newusername" is added to sudo group;
+      echo -e '\n';  
+   ;;
+   esac
+   fi
+elif [[ $osis == 'Ubuntu' ]] && [[  $useroption -eq 3 ]]; then
+   read -p 'Enter username to change its passowrd - ' changeuser
+   id $changeuser
+   if [ $? -eq 0 ]; then
+      read -s -p 'Enter new password - ' changedpassword
+      echo ""
+      echo "$changeuser:$changedpassword"  | sudo chpasswd
+      echo "New password Updated Successfully !!"
+   else
+      echo "$changeuser does not exists!"
+      exit 1
+   fi
 
+elif [[ $osis == 'Ubuntu' ]] && [[ $useroption -eq 2 ]]; then
+   read -p 'Enter User name to delete - ' deleteuser
+   
+
+   sudo deluser --remove-home $deleteuser
+  # echo "$deleteuser is successfully deleted!!"
+   #id $deleteuser
+   
 
 
 
@@ -87,3 +136,4 @@ elif [[ $useroption -eq 0 ]]; then
    exit 0
 
 fi
+
